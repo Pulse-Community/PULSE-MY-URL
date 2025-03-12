@@ -49,16 +49,40 @@ Dieses Projekt wurde während eines Pulse Community Calls entwickelt! Was als ge
    git clone https://github.com/Pulse-Community/PULSE-MY-URL.git
    ```
 
-2. **Installiere die Erweiterung in Chrome**:
+2. **Installiere die Abhängigkeiten und baue die CSS-Dateien**:
+   ```
+   cd PULSE-MY-URL
+   npm install
+   npx tailwindcss -i ./styles/src/input.css -o ./styles/dist/output.css
+   ```
+
+3. **Installiere die Erweiterung in Chrome**:
    * Öffne Chrome und navigiere zu `chrome://extensions/`
    * Aktiviere den "Entwicklermodus" (oben rechts)
    * Klicke auf "Entpackte Erweiterung laden"
    * Wähle den Ordner mit dem heruntergeladenen Repository
 
-3. **Konfiguriere deinen Webhook**:
+4. **Konfiguriere deinen Webhook**:
    * Klicke auf das Erweiterungssymbol in der Symbolleiste
    * Öffne die Einstellungen über den Link unten
    * Gib deine Webhook-URL ein und speichere die Einstellungen
+
+### Selbst packen für den Chrome Web Store
+
+Wenn du die Erweiterung selbst für den Chrome Web Store packen möchtest, führe folgende Schritte aus:
+
+1. **Stelle sicher, dass die CSS-Dateien aktuell sind**:
+   ```
+   npx tailwindcss -i ./styles/src/input.css -o ./styles/dist/output.css
+   ```
+
+2. **Erstelle eine ZIP-Datei mit den erforderlichen Dateien**:
+   ```
+   mkdir -p dist
+   zip -r dist/chrome-webhook.zip manifest.json icons/ html/ js/ styles/dist/ locales/ -x "*/\.*" "*/node_modules/*" "*/.git/*"
+   ```
+
+3. **Die fertige ZIP-Datei findest du im `dist/`-Verzeichnis**
 
 ### Verwendung
 
