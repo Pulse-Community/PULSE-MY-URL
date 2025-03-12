@@ -102,8 +102,8 @@ function addWebhookEntry(url = '', name = '', index = -1) {
   const entry = clone.querySelector('.webhook-entry');
   const urlInput = clone.querySelector('.webhook-url');
   const nameInput = clone.querySelector('.webhook-name');
+  const saveButton = clone.querySelector('.save-webhook-btn');
   const removeButton = clone.querySelector('.remove-webhook-btn');
-  const testButton = clone.querySelector('.test-webhook-btn');
   const statusElement = clone.querySelector('.webhook-status');
   
   // Werte setzen
@@ -118,31 +118,128 @@ function addWebhookEntry(url = '', name = '', index = -1) {
     entry.dataset.index = document.querySelectorAll('.webhook-entry').length;
   }
   
+  // Event-Listener für den Speichern-Button
+  saveButton.addEventListener('click', async () => {
+    const webhookUrl = urlInput.value.trim();
+    const webhookName = nameInput.value.trim();
+    
+    if (!webhookUrl) {
+      statusElement.textContent = 'Bitte geben Sie eine Webhook-URL ein.';
+      statusElement.className = 'webhook-status mt-2 text-sm text-red-600 dark:text-red-400';
+      return;
+    }
+    
+    try {
+      // URL validieren
+      new URL(webhookUrl);
+      
+      // Alle Webhooks abrufen
+      const webhooks = getWebhooksFromUI();
+      
+      // Einstellungen speichern
+      const storage = chrome.storage || browser.storage;
+      await storage.sync.set({
+        webhooks: webhooks,
+        // Für Abwärtskompatibilität die erste URL auch als webhookUrl speichern
+        webhookUrl: webhooks.length > 0 ? webhooks[0].url : ''
+      });
+      
+      // Benachrichtigung an den Background-Service-Worker senden
+      const runtime = chrome.runtime || browser.runtime;
+      runtime.sendMessage({ action: 'settingsUpdated' });
+      
+      // Visuelles Feedback im Eintrag
+      entry.classList.add('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+      setTimeout(() => {
+        entry.classList.remove('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+      }, 2000);
+      
+      // Erfolgsmeldung anzeigen
+      statusElement.textContent = 'Webhook erfolgreich gespeichert!';
+      statusElement.className = 'webhook-status mt-2 text-sm text-green-600 dark:text-green-400';
+      
+      // Test-Webhook-Dropdown aktualisieren
+      updateTestWebhookDropdown(webhooks);
+      
+    } catch (error) {
+      // Visuelles Feedback im Eintrag
+      entry.classList.add('border-red-300', 'dark:border-red-700', 'bg-red-50', 'dark:bg-red-900/20');
+      setTimeout(() => {
+        entry.classList.remove('border-red-300', 'dark:border-red-700', 'bg-red-50', 'dark:bg-red-900/20');
+      }, 2000);
+      
+      // Fehlermeldung anzeigen
+      statusElement.textContent = `Fehler: ${error.message}`;
+      statusElement.className = 'webhook-status mt-2 text-sm text-red-600 dark:text-red-400';
+    }
+  });
+  
   // Event-Listener für den Entfernen-Button
-  removeButton.addEventListener('click', () => {
+  removeButton.addEventListener('click', async () => {
     // Wenn es der letzte Webhook ist, nicht entfernen, sondern leeren
     if (document.querySelectorAll('.webhook-entry').length <= 1) {
       urlInput.value = '';
       nameInput.value = '';
       showStatus('Mindestens ein Webhook muss konfiguriert sein. Eintrag wurde geleert.', false);
+      
+      // Automatisch speichern
+      const webhooks = getWebhooksFromUI();
+      const storage = chrome.storage || browser.storage;
+      await storage.sync.set({
+        webhooks: webhooks,
+        webhookUrl: webhooks.length > 0 ? webhooks[0].url : ''
+      });
+      
+      // Benachrichtigung an den Background-Service-Worker senden
+      const runtime = chrome.runtime || browser.runtime;
+      runtime.sendMessage({ action: 'settingsUpdated' });
     } else {
-      entry.classList.add('animate-fade-out', 'animate-slide-down');
-      entry.addEventListener('animationend', () => {
+      // Animation hinzufügen
+      entry.classList.add('animate-fade-out');
+      
+      // Element nach der Animation entfernen oder nach einem Timeout, falls die Animation nicht ausgelöst wird
+      const animationTimeout = setTimeout(async () => {
         entry.remove();
         updateWebhookCounter();
         updateTestWebhookDropdown(getWebhooksFromUI());
+        
+        // Automatisch speichern
+        const webhooks = getWebhooksFromUI();
+        const storage = chrome.storage || browser.storage;
+        await storage.sync.set({
+          webhooks: webhooks,
+          webhookUrl: webhooks.length > 0 ? webhooks[0].url : ''
+        });
+        
+        // Benachrichtigung an den Background-Service-Worker senden
+        const runtime = chrome.runtime || browser.runtime;
+        runtime.sendMessage({ action: 'settingsUpdated' });
+        
+        // Erfolgsmeldung anzeigen
+        showStatus('Webhook erfolgreich entfernt und Einstellungen gespeichert!', true);
+      }, 400); // Timeout entspricht der Animationsdauer
+      
+      entry.addEventListener('animationend', async () => {
+        clearTimeout(animationTimeout);
+        entry.remove();
+        updateWebhookCounter();
+        updateTestWebhookDropdown(getWebhooksFromUI());
+        
+        // Automatisch speichern
+        const webhooks = getWebhooksFromUI();
+        const storage = chrome.storage || browser.storage;
+        await storage.sync.set({
+          webhooks: webhooks,
+          webhookUrl: webhooks.length > 0 ? webhooks[0].url : ''
+        });
+        
+        // Benachrichtigung an den Background-Service-Worker senden
+        const runtime = chrome.runtime || browser.runtime;
+        runtime.sendMessage({ action: 'settingsUpdated' });
+        
+        // Erfolgsmeldung anzeigen
+        showStatus('Webhook erfolgreich entfernt und Einstellungen gespeichert!', true);
       }, { once: true });
-    }
-  });
-  
-  // Event-Listener für den Test-Button
-  testButton.addEventListener('click', () => {
-    const webhookUrl = urlInput.value.trim();
-    if (webhookUrl) {
-      testSingleWebhook(webhookUrl, entry, statusElement);
-    } else {
-      statusElement.textContent = 'Bitte geben Sie eine Webhook-URL ein, bevor Sie testen.';
-      statusElement.className = 'webhook-status mt-2 text-sm text-red-600 dark:text-red-400';
     }
   });
   
@@ -168,7 +265,7 @@ function addWebhookEntry(url = '', name = '', index = -1) {
 function updateWebhookCounter() {
   const count = document.querySelectorAll('.webhook-entry').length;
   const webhookCount = document.getElementById('webhookCount');
-  webhookCount.textContent = `${count} Webhook${count !== 1 ? 's' : ''} konfiguriert`;
+  webhookCount.textContent = count;
 }
 
 // Funktion zum Aktualisieren des Test-Webhook-Dropdowns
