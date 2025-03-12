@@ -2,21 +2,38 @@
 // Dieses Script läuft im Hintergrund und verarbeitet Anfragen vom Popup und Content-Script
 
 /**
- * Sendet eine URL an den konfigurierten Webhook
+ * Sendet eine URL an einen oder mehrere konfigurierte Webhooks
  * @param {string} url - Die zu sendende URL
  * @param {string} customText - Optionaler benutzerdefinierter Text
+ * @param {number} tabId - Die ID des Tabs, von dem die URL gesendet wird
+ * @param {number|null} specificWebhookIndex - Index eines spezifischen Webhooks oder null für alle/Standard
  * @returns {Promise<Object>} - Antwort vom Webhook
  */
-async function sendUrlToWebhook(url, customText, tabId) {
+async function sendUrlToWebhook(url, customText, tabId, specificWebhookIndex = null) {
   try {
-    // Webhook-URL und Einstellungen aus dem Speicher abrufen
+    // Webhook-URLs und Einstellungen aus dem Speicher abrufen
     const storage = chrome.storage.sync;
-    const result = await storage.get(['webhookUrl', 'lastCustomText', 'includePageContent', 'tempIncludePageContent']);
-    const webhookUrl = result.webhookUrl;
+    const result = await storage.get([
+      'webhooks', 
+      'webhookUrl', // Für Abwärtskompatibilität
+      'lastCustomText', 
+      'includePageContent', 
+      'tempIncludePageContent',
+      'sendToAllWebhooks',
+      'activeWebhookIndex'
+    ]);
     
-    if (!webhookUrl) {
-      console.error('Keine Webhook-URL konfiguriert');
-      return { success: false, error: 'Keine Webhook-URL konfiguriert' };
+    // Webhooks aus den Einstellungen abrufen
+    let webhooks = result.webhooks || [];
+    
+    // Für Abwärtskompatibilität: Wenn keine Webhooks, aber eine webhookUrl vorhanden ist
+    if (webhooks.length === 0 && result.webhookUrl) {
+      webhooks = [{ url: result.webhookUrl, name: 'Standard-Webhook' }];
+    }
+    
+    if (webhooks.length === 0) {
+      console.error('Keine Webhooks konfiguriert');
+      return { success: false, error: 'Keine Webhooks konfiguriert' };
     }
     
     // Payload für den Webhook vorbereiten
@@ -37,21 +54,88 @@ async function sendUrlToWebhook(url, customText, tabId) {
       }
     }
     
-    // Webhook-Anfrage senden
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
+    // Bestimmen, welche Webhooks verwendet werden sollen
+    let targetWebhooks = [];
     
-    if (response.ok) {
-      return { success: true };
+    if (specificWebhookIndex !== null && webhooks[specificWebhookIndex]) {
+      // Spezifischer Webhook wurde angefordert
+      targetWebhooks = [webhooks[specificWebhookIndex]];
+    } else if (result.sendToAllWebhooks) {
+      // An alle Webhooks senden
+      targetWebhooks = webhooks;
     } else {
+      // Standard: Aktiven Webhook verwenden
+      const activeIndex = result.activeWebhookIndex || 0;
+      if (webhooks[activeIndex]) {
+        targetWebhooks = [webhooks[activeIndex]];
+      } else {
+        targetWebhooks = [webhooks[0]]; // Fallback auf den ersten Webhook
+      }
+    }
+    
+    // Ergebnisse für jeden Webhook
+    const results = [];
+    
+    // An jeden Ziel-Webhook senden
+    for (const webhook of targetWebhooks) {
+      try {
+        // Webhook-Anfrage senden
+        const response = await fetch(webhook.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+          results.push({ 
+            success: true, 
+            webhook: webhook.name || webhook.url 
+          });
+        } else {
+          results.push({ 
+            success: false, 
+            webhook: webhook.name || webhook.url,
+            error: `HTTP-Fehler: ${response.status} ${response.statusText}` 
+          });
+        }
+      } catch (error) {
+        results.push({ 
+          success: false, 
+          webhook: webhook.name || webhook.url,
+          error: error.message 
+        });
+      }
+    }
+    
+    // Gesamtergebnis bestimmen
+    const allSuccessful = results.every(result => result.success);
+    const allFailed = results.every(result => !result.success);
+    
+    if (allSuccessful) {
+      return { 
+        success: true,
+        results: results,
+        message: targetWebhooks.length > 1 
+          ? `URL an ${results.length} Webhooks gesendet` 
+          : 'URL erfolgreich gesendet'
+      };
+    } else if (allFailed) {
       return { 
         success: false, 
-        error: `HTTP-Fehler: ${response.status} ${response.statusText}` 
+        results: results,
+        error: targetWebhooks.length > 1 
+          ? 'Fehler beim Senden an alle Webhooks' 
+          : `Fehler: ${results[0].error}`
+      };
+    } else {
+      // Teilweise erfolgreich
+      return { 
+        success: true, 
+        partial: true,
+        results: results,
+        message: `URL an ${results.filter(r => r.success).length} von ${results.length} Webhooks gesendet`
       };
     }
   } catch (error) {
@@ -120,6 +204,7 @@ async function handleContextMenuClick(info, tab) {
   try {
     let customText = '';
     let includeContent = false;
+    let webhookIndex = null;
     
     // Je nach Menüpunkt unterschiedliche Aktionen ausführen
     switch (info.menuItemId) {
@@ -134,6 +219,12 @@ async function handleContextMenuClick(info, tab) {
         // URL mit ausgewähltem Text senden
         customText = info.selectionText || '';
         break;
+      default:
+        // Prüfen, ob es ein spezifischer Webhook ist
+        if (info.menuItemId.startsWith('pulse-webhook-')) {
+          webhookIndex = parseInt(info.menuItemId.replace('pulse-webhook-', ''));
+        }
+        break;
     }
     
     // Temporär die Einstellung für includePageContent setzen, wenn nötig
@@ -142,7 +233,7 @@ async function handleContextMenuClick(info, tab) {
     }
     
     // URL senden
-    const result = await sendUrlToWebhook(tab.url, customText, tab.id);
+    const result = await sendUrlToWebhook(tab.url, customText, tab.id, webhookIndex);
     
     // Temporäre Einstellung zurücksetzen
     if (includeContent) {
@@ -151,9 +242,9 @@ async function handleContextMenuClick(info, tab) {
     
     // Benachrichtigung anzeigen
     if (result.success) {
-      showNotification(true, 'URL erfolgreich gesendet!');
+      showNotification(true, result.message || 'URL erfolgreich gesendet!');
     } else {
-      showNotification(false, `Fehler: ${result.error}`);
+      showNotification(false, result.error || 'Fehler beim Senden der URL');
     }
   } catch (error) {
     console.error('Fehler bei der Verarbeitung des Kontextmenü-Klicks:', error);
@@ -175,7 +266,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   if (request.action === "sendUrl") {
     const tabId = sender.tab ? sender.tab.id : (request.tabId || null);
-    sendUrlToWebhook(request.url, request.text, tabId)
+    const webhookIndex = request.webhookIndex !== undefined ? request.webhookIndex : null;
+    
+    sendUrlToWebhook(request.url, request.text, tabId, webhookIndex)
       .then(result => sendResponse(result))
       .catch(error => {
         console.error('Fehler beim Senden der URL:', error);
@@ -184,42 +277,103 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Wichtig für asynchrone Antworten
   }
   
+  if (request.action === "settingsUpdated") {
+    // Kontextmenüs neu erstellen, wenn die Einstellungen aktualisiert wurden
+    createContextMenus();
+    sendResponse({ success: true });
+    return true;
+  }
+  
   return false;
 });
 
 // Kontextmenüs erstellen
-function createContextMenus() {
-  // Bestehende Menüs löschen
-  chrome.contextMenus.removeAll();
-  
-  // Hauptmenü erstellen
-  chrome.contextMenus.create({
-    id: 'pulse-main',
-    title: 'PULSE MY URL',
-    contexts: ['all']
-  });
-  
-  // Untermenüs erstellen
-  chrome.contextMenus.create({
-    id: 'pulse-send-url',
-    parentId: 'pulse-main',
-    title: 'URL an Webhook senden',
-    contexts: ['all']
-  });
-  
-  chrome.contextMenus.create({
-    id: 'pulse-send-url-with-content',
-    parentId: 'pulse-main',
-    title: 'URL mit Seiteninhalt senden',
-    contexts: ['all']
-  });
-  
-  chrome.contextMenus.create({
-    id: 'pulse-send-url-with-selection',
-    parentId: 'pulse-main',
-    title: 'URL mit ausgewähltem Text senden',
-    contexts: ['selection']
-  });
+async function createContextMenus() {
+  try {
+    // Bestehende Menüs löschen
+    await chrome.contextMenus.removeAll();
+    
+    // Webhooks aus den Einstellungen abrufen
+    const storage = chrome.storage.sync;
+    const result = await storage.get(['webhooks', 'webhookUrl', 'sendToAllWebhooks']);
+    
+    let webhooks = result.webhooks || [];
+    
+    // Für Abwärtskompatibilität: Wenn keine Webhooks, aber eine webhookUrl vorhanden ist
+    if (webhooks.length === 0 && result.webhookUrl) {
+      webhooks = [{ url: result.webhookUrl, name: 'Standard-Webhook' }];
+    }
+    
+    // Hauptmenü erstellen
+    chrome.contextMenus.create({
+      id: 'pulse-main',
+      title: 'PULSE MY URL',
+      contexts: ['all']
+    });
+    
+    // Untermenüs erstellen
+    chrome.contextMenus.create({
+      id: 'pulse-send-url',
+      parentId: 'pulse-main',
+      title: 'URL an Webhook senden',
+      contexts: ['all']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'pulse-send-url-with-content',
+      parentId: 'pulse-main',
+      title: 'URL mit Seiteninhalt senden',
+      contexts: ['all']
+    });
+    
+    chrome.contextMenus.create({
+      id: 'pulse-send-url-with-selection',
+      parentId: 'pulse-main',
+      title: 'URL mit ausgewähltem Text senden',
+      contexts: ['selection']
+    });
+    
+    // Wenn mehrere Webhooks vorhanden sind und nicht alle gleichzeitig gesendet werden sollen,
+    // füge ein Untermenü für jeden Webhook hinzu
+    if (webhooks.length > 1 && !result.sendToAllWebhooks) {
+      // Trennlinie hinzufügen
+      chrome.contextMenus.create({
+        id: 'pulse-separator',
+        parentId: 'pulse-main',
+        type: 'separator',
+        contexts: ['all']
+      });
+      
+      // Menüpunkt für "An alle senden" hinzufügen
+      chrome.contextMenus.create({
+        id: 'pulse-send-to-all',
+        parentId: 'pulse-main',
+        title: 'An alle Webhooks senden',
+        contexts: ['all']
+      });
+      
+      // Untermenü für spezifische Webhooks erstellen
+      chrome.contextMenus.create({
+        id: 'pulse-specific-webhooks',
+        parentId: 'pulse-main',
+        title: 'An spezifischen Webhook senden',
+        contexts: ['all']
+      });
+      
+      // Menüpunkte für jeden Webhook hinzufügen
+      webhooks.forEach((webhook, index) => {
+        const webhookName = webhook.name || `Webhook ${index + 1}`;
+        chrome.contextMenus.create({
+          id: `pulse-webhook-${index}`,
+          parentId: 'pulse-specific-webhooks',
+          title: webhookName,
+          contexts: ['all']
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Fehler beim Erstellen der Kontextmenüs:', error);
+  }
 }
 
 // Listener für Kontextmenü-Klicks

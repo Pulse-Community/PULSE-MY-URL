@@ -9,92 +9,204 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap">
 </head>
 <body class="bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 h-full">
-  <div class="max-w-2xl mx-auto p-6 animate-fade-in">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center space-x-3">
-        <img src="../icons/icon.png" class="h-10 w-10" alt="PULSE MY URL Logo">
-        <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">PULSE MY URL</h1>
-      </div>
-      <button id="themeToggle" class="btn btn-icon btn-ghost rounded-full">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      </button>
-    </div>
-    
-    <!-- Configuration Card -->
-    <div class="card card-hover mb-8 animate-slide-up">
-      <div class="flex items-center mb-5">
-        <div class="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-700 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-          </svg>
+  <div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <!-- Header mit Logo -->
+      <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="bg-white/20 p-2 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-white">PULSE MY URL</h1>
+              <p class="text-primary-100 text-sm">Webhook-Konfiguration</p>
+            </div>
+          </div>
+          <button id="themeToggle" class="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
         </div>
-        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Webhook-Konfiguration</h2>
       </div>
       
-      <div class="space-y-6">
-        <div>
-          <label for="webhookUrl" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Webhook URL</label>
-          <input type="url" id="webhookUrl" placeholder="https://example.com/webhook" class="input" required>
-          <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">Die URL, an die die aktuellen Browser-URLs gesendet werden sollen.</p>
+      <div class="p-6">
+        <!-- Configuration Card -->
+        <div class="card card-hover mb-8 animate-slide-up">
+          <div class="flex items-center mb-5">
+            <div class="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-700 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Webhook-Konfiguration</h2>
+          </div>
+          
+          <div class="space-y-6">
+            <!-- Webhook-Liste -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <label class="flex items-center space-x-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                  <span>Webhook URLs</span>
+                </label>
+                <span id="webhookCount" class="px-2 py-1 text-xs font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-full">0 Webhooks konfiguriert</span>
+              </div>
+              
+              <div id="webhookList" class="space-y-3 mb-4">
+                <!-- Webhook-Einträge werden hier dynamisch eingefügt -->
+              </div>
+              
+              <button id="addWebhookButton" class="btn btn-outline btn-sm group w-full mt-3 bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-800/30 hover:border-primary-300 dark:hover:border-primary-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 transition-transform group-hover:translate-y-[-1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Webhook hinzufügen
+              </button>
+              
+              <p class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">URLs, an die die aktuellen Browser-URLs gesendet werden sollen. Mehrere Webhooks ermöglichen das gleichzeitige Senden an verschiedene Dienste.</p>
+            </div>
+            
+            <!-- Webhook-Optionen -->
+            <div class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <h3 class="flex items-center space-x-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Webhook-Optionen</span>
+              </h3>
+              
+              <div class="space-y-4 bg-neutral-50 dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <div class="flex items-start">
+                  <div class="flex items-center h-5">
+                    <input id="includePageContent" type="checkbox" class="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800">
+                  </div>
+                  <div class="ml-3 text-sm">
+                    <label for="includePageContent" class="font-medium text-neutral-700 dark:text-neutral-300">Seiteninhalt als Markdown mitsenden</label>
+                    <p class="text-neutral-500 dark:text-neutral-400">Extrahiert den Inhalt der aktuellen Seite und sendet ihn als Markdown-Text mit.</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="flex items-center h-5">
+                    <input id="sendToAllWebhooks" type="checkbox" class="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800">
+                  </div>
+                  <div class="ml-3 text-sm">
+                    <label for="sendToAllWebhooks" class="font-medium text-neutral-700 dark:text-neutral-300">An alle Webhooks senden</label>
+                    <p class="text-neutral-500 dark:text-neutral-400">Sendet die URL an alle konfigurierten Webhooks gleichzeitig. Wenn deaktiviert, wird ein Auswahlmenü angezeigt.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Speichern-Schaltfläche -->
+            <div class="pt-5 flex justify-end">
+              <button id="saveButton" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Einstellungen speichern
+              </button>
+            </div>
+          </div>
         </div>
         
-        <div class="flex items-start">
-          <div class="flex items-center h-5">
-            <input id="includePageContent" type="checkbox" class="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800">
+        <!-- Status Message -->
+        <div id="statusMessage" class="hidden mb-8 p-4 rounded-lg text-sm"></div>
+        
+        <!-- Test-Bereich -->
+        <div class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <h3 class="flex items-center space-x-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Webhook testen</span>
+          </h3>
+          
+          <div class="space-y-4 bg-neutral-50 dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div>
+              <label for="testWebhookSelect" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Webhook auswählen</label>
+              <select id="testWebhookSelect" class="block w-full rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                <option value="">Bitte wählen Sie einen Webhook</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="testText" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Test-Nachricht (optional)</label>
+              <textarea id="testText" rows="3" class="block w-full rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-primary-500 focus:ring-primary-500 sm:text-sm" placeholder="Geben Sie hier eine benutzerdefinierte Testnachricht ein..."></textarea>
+            </div>
+            
+            <div class="flex justify-end">
+              <button id="testButton" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Webhook testen
+              </button>
+            </div>
+            
+            <div id="testStatus" class="text-sm"></div>
           </div>
-          <div class="ml-3 text-sm">
-            <label for="includePageContent" class="font-medium text-neutral-700 dark:text-neutral-300">Seiteninhalt als Markdown mitsenden</label>
-            <p class="text-neutral-500 dark:text-neutral-400">Extrahiert den Inhalt der aktuellen Seite und sendet ihn als Markdown-Text mit.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Template für Webhook-Einträge -->
+    <template id="webhookEntryTemplate">
+      <div class="webhook-entry bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm p-4 mb-3 relative transition-all duration-300">
+        <div class="space-y-3">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 text-primary-500 dark:text-primary-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </div>
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 ml-2">Webhook URL</label>
+          </div>
+          <div class="relative rounded-md shadow-sm">
+            <input type="url" class="webhook-url block w-full rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-primary-500 focus:ring-primary-500 sm:text-sm" placeholder="https://example.com/webhook" required>
+          </div>
+          
+          <div class="flex items-center">
+            <div class="flex-shrink-0 text-primary-500 dark:text-primary-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </div>
+            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 ml-2">Webhook Name (optional)</label>
+          </div>
+          <div class="relative rounded-md shadow-sm">
+            <input type="text" class="webhook-name block w-full rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:border-primary-500 focus:ring-primary-500 sm:text-sm" placeholder="z.B. Slack, Discord, etc.">
           </div>
         </div>
         
-        <button id="saveButton" class="btn btn-primary group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:translate-y-[-1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Einstellungen speichern
-        </button>
-      </div>
-    </div>
-    
-    <!-- Status Message -->
-    <div id="statusMessage" class="hidden mb-8 p-4 rounded-lg text-sm"></div>
-    
-    <!-- Test Card -->
-    <div class="card card-hover animate-slide-up" style="animation-delay: 100ms;">
-      <div class="flex items-center mb-5">
-        <div class="bg-secondary-100 dark:bg-secondary-900/30 p-2 rounded-lg mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-700 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
+        <div class="flex justify-end space-x-2 mt-4">
+          <button class="test-webhook-btn inline-flex items-center px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-md text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Testen
+          </button>
+          <button class="remove-webhook-btn inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-800 rounded-md text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Entfernen
+          </button>
         </div>
-        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Test</h2>
+        
+        <div class="webhook-status mt-2 text-sm"></div>
       </div>
-      
-      <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-5">Testen Sie Ihre Webhook-Konfiguration mit einer Test-Anfrage:</p>
-      
-      <div class="mb-5">
-        <label for="testText" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Optionaler Text für den Test</label>
-        <textarea id="testText" rows="2" placeholder="Fügen Sie hier einen optionalen Text für den Test hinzu..." class="input resize-none text-sm"></textarea>
-        <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">Dieser Text wird zusammen mit der Test-URL gesendet.</p>
-      </div>
-      
-      <div class="flex items-center space-x-4">
-        <button id="testButton" class="btn btn-outline group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:translate-y-[-1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          Test-Anfrage senden
-        </button>
-        <div id="testStatus" class="text-sm"></div>
-      </div>
-    </div>
+    </template>
     
     <!-- Footer -->
     <div class="mt-10 text-center text-xs text-neutral-500 dark:text-neutral-500">

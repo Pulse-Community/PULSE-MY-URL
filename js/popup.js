@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const optionsLink = document.getElementById('openOptions');
   const customTextInput = document.getElementById('customText');
   const statusElement = document.getElementById('statusMessage');
+  
+  // Webhook-Auswahl-Element erstellen
+  createWebhookSelector();
 
   // Aktuelle URL anzeigen
   displayCurrentUrl();
@@ -54,6 +57,73 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 300);
     }, 3000);
   }
+  
+  /**
+   * Erstellt das Webhook-Auswahl-Element
+   */
+  async function createWebhookSelector() {
+    try {
+      // Einstellungen abrufen
+      const storage = chrome.storage.sync;
+      const result = await storage.get(['webhooks', 'webhookUrl', 'sendToAllWebhooks', 'activeWebhookIndex']);
+      
+      let webhooks = result.webhooks || [];
+      
+      // Für Abwärtskompatibilität: Wenn keine Webhooks, aber eine webhookUrl vorhanden ist
+      if (webhooks.length === 0 && result.webhookUrl) {
+        webhooks = [{ url: result.webhookUrl, name: 'Standard-Webhook' }];
+      }
+      
+      // Wenn keine Webhooks konfiguriert sind oder nur einer, keine Auswahl anzeigen
+      if (webhooks.length <= 1 || result.sendToAllWebhooks) {
+        return;
+      }
+      
+      // Webhook-Auswahl-Container erstellen
+      const container = document.createElement('div');
+      container.className = 'mb-4';
+      container.id = 'webhookSelectorContainer';
+      
+      const label = document.createElement('div');
+      label.className = 'flex items-center justify-between mb-2';
+      label.innerHTML = `
+        <span class="text-sm font-medium text-neutral-600 dark:text-neutral-400">Webhook auswählen</span>
+      `;
+      
+      const select = document.createElement('select');
+      select.id = 'webhookSelector';
+      select.className = 'input text-sm';
+      
+      // Option für "An alle senden"
+      const allOption = document.createElement('option');
+      allOption.value = 'all';
+      allOption.textContent = 'An alle Webhooks senden';
+      select.appendChild(allOption);
+      
+      // Optionen für jeden Webhook
+      webhooks.forEach((webhook, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = webhook.name || webhook.url;
+        select.appendChild(option);
+      });
+      
+      // Aktiven Webhook auswählen
+      const activeIndex = result.activeWebhookIndex || 0;
+      if (activeIndex >= 0 && activeIndex < webhooks.length) {
+        select.value = activeIndex;
+      }
+      
+      container.appendChild(label);
+      container.appendChild(select);
+      
+      // Container einfügen vor dem Senden-Button
+      const customTextContainer = document.querySelector('#customText').parentNode;
+      customTextContainer.parentNode.insertBefore(container, customTextContainer.nextSibling);
+    } catch (error) {
+      console.error('Fehler beim Erstellen der Webhook-Auswahl:', error);
+    }
+  }
 
   /**
    * Sendet die aktuelle URL an den Webhook
@@ -72,13 +142,19 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     
     try {
-      // Webhook-URL aus den Einstellungen abrufen
+      // Webhook-Einstellungen aus den Einstellungen abrufen
       const storage = chrome.storage.sync;
-      const result = await storage.get(['webhookUrl', 'lastCustomText', 'includePageContent']);
-      const webhookUrl = result.webhookUrl;
+      const result = await storage.get(['webhooks', 'webhookUrl', 'lastCustomText', 'includePageContent', 'sendToAllWebhooks']);
       
-      if (!webhookUrl) {
-        showStatus('Keine Webhook-URL konfiguriert. Bitte in den Einstellungen festlegen.', false);
+      let webhooks = result.webhooks || [];
+      
+      // Für Abwärtskompatibilität: Wenn keine Webhooks, aber eine webhookUrl vorhanden ist
+      if (webhooks.length === 0 && result.webhookUrl) {
+        webhooks = [{ url: result.webhookUrl, name: 'Standard-Webhook' }];
+      }
+      
+      if (webhooks.length === 0) {
+        showStatus('Keine Webhooks konfiguriert. Bitte in den Einstellungen festlegen.', false);
         // Button zurücksetzen
         sendButton.disabled = false;
         sendButton.classList.remove('btn-disabled');
@@ -103,40 +179,28 @@ document.addEventListener('DOMContentLoaded', function() {
       // Benutzerdefinierten Text speichern
       await storage.set({lastCustomText: customText});
       
-      let payload = {
-        url: currentUrl,
-        text: customText
-      };
+      // Bestimmen, welcher Webhook verwendet werden soll
+      let webhookIndex = null; // null = Standard/Alle
       
-      // Wenn die Option aktiviert ist, Seiteninhalt als Markdown hinzufügen
-      if (result.includePageContent) {
-        try {
-          const pageContent = await chrome.runtime.sendMessage({
-            action: "getPageContent",
-            tabId: tabs[0].id
-          });
-          
-          if (pageContent && pageContent.content) {
-            payload.content = pageContent.content;
-          }
-        } catch (error) {
-          console.error('Fehler beim Abrufen des Seiteninhalts:', error);
-        }
+      // Wenn Webhook-Auswahl vorhanden ist und nicht "An alle senden" ausgewählt ist
+      const webhookSelector = document.getElementById('webhookSelector');
+      if (webhookSelector && webhookSelector.value !== 'all') {
+        webhookIndex = parseInt(webhookSelector.value);
       }
       
-      // Webhook-Anfrage senden
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
+      // Anfrage an den Background-Service-Worker senden
+      const response = await chrome.runtime.sendMessage({
+        action: "sendUrl",
+        url: currentUrl,
+        text: customText,
+        tabId: tabs[0].id,
+        webhookIndex: webhookIndex
       });
       
-      if (response.ok) {
-        showStatus('URL erfolgreich gesendet!', true);
+      if (response.success) {
+        showStatus(response.message || 'URL erfolgreich gesendet!', true);
       } else {
-        showStatus(`Fehler: ${response.status} ${response.statusText}`, false);
+        showStatus(response.error || 'Fehler beim Senden der URL', false);
       }
     } catch (error) {
       console.error('Fehler beim Senden der URL:', error);
