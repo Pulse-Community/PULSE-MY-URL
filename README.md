@@ -46,7 +46,7 @@ Dieses Projekt wurde während eines Pulse Community Calls entwickelt! Was als ge
 
 1. **Lade das Repository herunter**:  
    ```
-   git clone https://github.com/yourusername/pulse-my-url.git
+   git clone https://github.com/Pulse-Community/PULSE-MY-URL.git
    ```
 
 2. **Installiere die Erweiterung in Chrome**:
