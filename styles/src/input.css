@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  body {
+    @apply bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 shadow-sm;
+  }
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white focus:ring-primary-500 border border-transparent;
+  }
+  .btn-secondary {
+    @apply bg-secondary-600 hover:bg-secondary-700 text-white focus:ring-secondary-500 border border-transparent;
+  }
+  .btn-outline {
+    @apply border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 focus:ring-primary-500;
+  }
+  .btn-ghost {
+    @apply text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-transparent;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+  .btn-lg {
+    @apply px-5 py-2.5 text-lg;
+  }
+  .btn-icon {
+    @apply p-2;
+  }
+  .btn-disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* Inputs */
+  .input {
+    @apply block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-neutral-800 dark:text-white transition-colors duration-200;
+  }
+  .input-sm {
+    @apply px-2.5 py-1.5 text-sm;
+  }
+  .input-lg {
+    @apply px-4 py-3 text-lg;
+  }
+  .input-error {
+    @apply border-danger-500 focus:ring-danger-500 focus:border-danger-500;
+  }
+  .input-success {
+    @apply border-success-500 focus:ring-success-500 focus:border-success-500;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-md p-6 border border-neutral-200 dark:border-neutral-700 transition-all duration-200;
+  }
+  .card-hover {
+    @apply hover:shadow-lg dark:hover:shadow-dark-lg;
+  }
+  .card-interactive {
+    @apply hover:shadow-lg dark:hover:shadow-dark-lg cursor-pointer;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    @apply bg-success-50 text-success-700 dark:bg-success-700/20 dark:text-success-100;
+  }
+  .badge-error {
+    @apply bg-danger-50 text-danger-700 dark:bg-danger-700/20 dark:text-danger-100;
+  }
+  .badge-primary {
+    @apply bg-primary-50 text-primary-700 dark:bg-primary-700/20 dark:text-primary-100;
+  }
+  .badge-secondary {
+    @apply bg-secondary-50 text-secondary-700 dark:bg-secondary-700/20 dark:text-secondary-100;
+  }
+  .badge-neutral {
+    @apply bg-neutral-100 text-neutral-700 dark:bg-neutral-700/20 dark:text-neutral-100;
+  }
+
+  /* Tooltips */
+  .tooltip {
+    @apply absolute z-10 p-2 text-sm bg-neutral-900 dark:bg-neutral-800 text-white rounded-md shadow-lg;
+  }
+
+  /* Dividers */
+  .divider {
+    @apply h-px w-full bg-neutral-200 dark:bg-neutral-700 my-4;
+  }
+  .divider-vertical {
+    @apply w-px h-full bg-neutral-200 dark:bg-neutral-700 mx-4;
+  }
+
+  /* Alerts */
+  .alert {
+    @apply p-4 rounded-lg border;
+  }
+  .alert-success {
+    @apply bg-success-50 border-success-100 text-success-700 dark:bg-success-700/10 dark:border-success-700/20 dark:text-success-100;
+  }
+  .alert-error {
+    @apply bg-danger-50 border-danger-100 text-danger-700 dark:bg-danger-700/10 dark:border-danger-700/20 dark:text-danger-100;
+  }
+  .alert-info {
+    @apply bg-primary-50 border-primary-100 text-primary-700 dark:bg-primary-700/10 dark:border-primary-700/20 dark:text-primary-100;
+  }
+  .alert-warning {
+    @apply bg-yellow-50 border-yellow-100 text-yellow-700 dark:bg-yellow-700/10 dark:border-yellow-700/20 dark:text-yellow-100;
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border border-white/20 dark:border-neutral-700/20;
+  }
+} 

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PULSE MY URL - Einstellungen</title>
+  <link rel="stylesheet" href="../styles/dist/output.css">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap">
+</head>
+<body class="bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 h-full">
+  <div class="max-w-2xl mx-auto p-6 animate-fade-in">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center space-x-3">
+        <img src="../icons/icon.png" class="h-10 w-10" alt="PULSE MY URL Logo">
+        <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">PULSE MY URL</h1>
+      </div>
+      <button id="themeToggle" class="btn btn-icon btn-ghost rounded-full">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Configuration Card -->
+    <div class="card card-hover mb-8 animate-slide-up">
+      <div class="flex items-center mb-5">
+        <div class="bg-primary-100 dark:bg-primary-900/30 p-2 rounded-lg mr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-700 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Webhook-Konfiguration</h2>
+      </div>
+      
+      <div class="space-y-6">
+        <div>
+          <label for="webhookUrl" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Webhook URL</label>
+          <input type="url" id="webhookUrl" placeholder="https://example.com/webhook" class="input" required>
+          <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">Die URL, an die die aktuellen Browser-URLs gesendet werden sollen.</p>
+        </div>
+        
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            <input id="includePageContent" type="checkbox" class="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 dark:border-neutral-600 dark:bg-neutral-800">
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="includePageContent" class="font-medium text-neutral-700 dark:text-neutral-300">Seiteninhalt als Markdown mitsenden</label>
+            <p class="text-neutral-500 dark:text-neutral-400">Extrahiert den Inhalt der aktuellen Seite und sendet ihn als Markdown-Text mit.</p>
+          </div>
+        </div>
+        
+        <button id="saveButton" class="btn btn-primary group">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:translate-y-[-1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Einstellungen speichern
+        </button>
+      </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div id="statusMessage" class="hidden mb-8 p-4 rounded-lg text-sm"></div>
+    
+    <!-- Test Card -->
+    <div class="card card-hover animate-slide-up" style="animation-delay: 100ms;">
+      <div class="flex items-center mb-5">
+        <div class="bg-secondary-100 dark:bg-secondary-900/30 p-2 rounded-lg mr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-700 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Test</h2>
+      </div>
+      
+      <p class="text-sm text-neutral-600 dark:text-neutral-400 mb-5">Testen Sie Ihre Webhook-Konfiguration mit einer Test-Anfrage:</p>
+      
+      <div class="mb-5">
+        <label for="testText" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Optionaler Text für den Test</label>
+        <textarea id="testText" rows="2" placeholder="Fügen Sie hier einen optionalen Text für den Test hinzu..." class="input resize-none text-sm"></textarea>
+        <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">Dieser Text wird zusammen mit der Test-URL gesendet.</p>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <button id="testButton" class="btn btn-outline group">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transition-transform group-hover:translate-y-[-1px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Test-Anfrage senden
+        </button>
+        <div id="testStatus" class="text-sm"></div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="mt-10 text-center text-xs text-neutral-500 dark:text-neutral-500">
+      <p class="font-medium">PULSE MY URL v1.2.0</p>
+      <p class="mt-1">Entwickelt mit <span class="text-danger-500">♥</span> und Tailwind CSS</p>
+    </div>
+  </div>
+  
+  <script src="../js/options.js"></script>
+</body>
+</html> 
