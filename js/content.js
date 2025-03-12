@@ -7,8 +7,64 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const pageContent = extractPageContent();
     sendResponse({ content: pageContent });
   }
+  
+  if (request.action === "showNotification") {
+    showNotification(request.success, request.message);
+  }
+  
   return true; // Wichtig für asynchrone Antworten
 });
+
+/**
+ * Zeigt eine Benachrichtigung auf der Webseite an
+ * @param {boolean} success - Ob die Aktion erfolgreich war
+ * @param {string} message - Die anzuzeigende Nachricht
+ */
+function showNotification(success, message) {
+  // Bestehende Benachrichtigungen entfernen
+  const existingNotifications = document.querySelectorAll('.pulse-my-url-notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Neue Benachrichtigung erstellen
+  const notification = document.createElement('div');
+  notification.className = 'pulse-my-url-notification';
+  notification.textContent = message;
+  
+  // Styling für die Benachrichtigung
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    zIndex: '9999',
+    fontFamily: 'Inter, system-ui, sans-serif',
+    fontSize: '14px',
+    fontWeight: '500',
+    transition: 'opacity 0.3s ease-in-out',
+    opacity: '0',
+    maxWidth: '300px',
+    color: success ? '#fff' : '#fff',
+    backgroundColor: success ? '#10b981' : '#ef4444'
+  });
+  
+  // Benachrichtigung zum DOM hinzufügen
+  document.body.appendChild(notification);
+  
+  // Animation starten
+  setTimeout(() => {
+    notification.style.opacity = '1';
+  }, 10);
+  
+  // Benachrichtigung nach 3 Sekunden ausblenden
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
 
 /**
  * Extrahiert den Inhalt der Seite und konvertiert ihn in Markdown

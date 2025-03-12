@@ -11,7 +11,7 @@ async function sendUrlToWebhook(url, customText, tabId) {
   try {
     // Webhook-URL und Einstellungen aus dem Speicher abrufen
     const storage = chrome.storage.sync;
-    const result = await storage.get(['webhookUrl', 'lastCustomText', 'includePageContent']);
+    const result = await storage.get(['webhookUrl', 'lastCustomText', 'includePageContent', 'tempIncludePageContent']);
     const webhookUrl = result.webhookUrl;
     
     if (!webhookUrl) {
@@ -25,8 +25,8 @@ async function sendUrlToWebhook(url, customText, tabId) {
       text: customText || result.lastCustomText || ''
     };
     
-    // Wenn die Option aktiviert ist, Seiteninhalt als Markdown hinzufügen
-    if (result.includePageContent && tabId) {
+    // Wenn die Option aktiviert ist oder temporär aktiviert wurde, Seiteninhalt als Markdown hinzufügen
+    if ((result.includePageContent || result.tempIncludePageContent) && tabId) {
       try {
         const content = await getPageContent(tabId);
         if (content) {
@@ -77,7 +77,7 @@ async function getPageContent(tabId) {
       // Content-Script ist möglicherweise nicht injiziert, wir injizieren es
       await chrome.scripting.executeScript({
         target: { tabId: tabId },
-        files: ['content.js']
+        files: ['js/content.js']
       });
       
       // Erneut versuchen, den Inhalt abzurufen
@@ -91,6 +91,73 @@ async function getPageContent(tabId) {
   } catch (error) {
     console.error('Fehler beim Abrufen des Seiteninhalts:', error);
     return null;
+  }
+}
+
+/**
+ * Zeigt eine Benachrichtigung über den Erfolg oder Misserfolg einer Aktion an
+ * @param {boolean} success - Ob die Aktion erfolgreich war
+ * @param {string} message - Die anzuzeigende Nachricht
+ */
+function showNotification(success, message) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: "showNotification",
+        success: success,
+        message: message
+      });
+    }
+  });
+}
+
+/**
+ * Verarbeitet einen Klick auf einen Kontextmenü-Eintrag
+ * @param {Object} info - Informationen über den Klick
+ * @param {Object} tab - Informationen über den Tab
+ */
+async function handleContextMenuClick(info, tab) {
+  try {
+    let customText = '';
+    let includeContent = false;
+    
+    // Je nach Menüpunkt unterschiedliche Aktionen ausführen
+    switch (info.menuItemId) {
+      case 'pulse-send-url':
+        // Einfach die URL senden
+        break;
+      case 'pulse-send-url-with-content':
+        // URL mit Seiteninhalt senden
+        includeContent = true;
+        break;
+      case 'pulse-send-url-with-selection':
+        // URL mit ausgewähltem Text senden
+        customText = info.selectionText || '';
+        break;
+    }
+    
+    // Temporär die Einstellung für includePageContent setzen, wenn nötig
+    if (includeContent) {
+      await chrome.storage.sync.set({ 'tempIncludePageContent': true });
+    }
+    
+    // URL senden
+    const result = await sendUrlToWebhook(tab.url, customText, tab.id);
+    
+    // Temporäre Einstellung zurücksetzen
+    if (includeContent) {
+      await chrome.storage.sync.remove('tempIncludePageContent');
+    }
+    
+    // Benachrichtigung anzeigen
+    if (result.success) {
+      showNotification(true, 'URL erfolgreich gesendet!');
+    } else {
+      showNotification(false, `Fehler: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('Fehler bei der Verarbeitung des Kontextmenü-Klicks:', error);
+    showNotification(false, `Fehler: ${error.message}`);
   }
 }
 
@@ -120,5 +187,48 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return false;
 });
 
+// Kontextmenüs erstellen
+function createContextMenus() {
+  // Bestehende Menüs löschen
+  chrome.contextMenus.removeAll();
+  
+  // Hauptmenü erstellen
+  chrome.contextMenus.create({
+    id: 'pulse-main',
+    title: 'PULSE MY URL',
+    contexts: ['all']
+  });
+  
+  // Untermenüs erstellen
+  chrome.contextMenus.create({
+    id: 'pulse-send-url',
+    parentId: 'pulse-main',
+    title: 'URL an Webhook senden',
+    contexts: ['all']
+  });
+  
+  chrome.contextMenus.create({
+    id: 'pulse-send-url-with-content',
+    parentId: 'pulse-main',
+    title: 'URL mit Seiteninhalt senden',
+    contexts: ['all']
+  });
+  
+  chrome.contextMenus.create({
+    id: 'pulse-send-url-with-selection',
+    parentId: 'pulse-main',
+    title: 'URL mit ausgewähltem Text senden',
+    contexts: ['selection']
+  });
+}
+
+// Listener für Kontextmenü-Klicks
+chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
+
 // Initialisierung des Background-Scripts
+chrome.runtime.onInstalled.addListener(() => {
+  createContextMenus();
+  console.log('PULSE MY URL: Kontextmenüs erstellt');
+});
+
 console.log('PULSE MY URL: Background-Script initialisiert'); 
