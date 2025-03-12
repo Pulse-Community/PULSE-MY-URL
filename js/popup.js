@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       // Webhook-Einstellungen aus den Einstellungen abrufen
       const storage = chrome.storage.sync;
-      const result = await storage.get(['webhooks', 'webhookUrl', 'lastCustomText', 'includePageContent', 'sendToAllWebhooks']);
+      const result = await storage.get(['webhooks', 'webhookUrl', 'lastCustomText', 'includePageContent', 'sendToAllWebhooks', 'clearTextAfterSend']);
       
       let webhooks = result.webhooks || [];
       
@@ -176,8 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const currentUrl = tabs[0].url;
       const customText = customTextInput.value || result.lastCustomText || '';
       
-      // Benutzerdefinierten Text speichern
-      await storage.set({lastCustomText: customText});
+      // Benutzerdefinierten Text speichern, wenn er nicht nach dem Senden gelöscht werden soll
+      if (!result.clearTextAfterSend) {
+        await storage.set({lastCustomText: customText});
+      }
       
       // Bestimmen, welcher Webhook verwendet werden soll
       let webhookIndex = null; // null = Standard/Alle
@@ -199,6 +201,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (response.success) {
         showStatus(response.message || 'URL erfolgreich gesendet!', true);
+        
+        // Wenn der Text nach dem Senden gelöscht werden soll
+        if (result.clearTextAfterSend && customText) {
+          customTextInput.value = '';
+        }
       } else {
         showStatus(response.error || 'Fehler beim Senden der URL', false);
       }

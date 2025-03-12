@@ -20,6 +20,7 @@ async function sendUrlToWebhook(url, customText, tabId, specificWebhookIndex = n
       'includePageContent', 
       'tempIncludePageContent',
       'sendToAllWebhooks',
+      'clearTextAfterSend',
       'activeWebhookIndex'
     ]);
     
@@ -109,8 +110,14 @@ async function sendUrlToWebhook(url, customText, tabId, specificWebhookIndex = n
       }
     }
     
-    // Gesamtergebnis bestimmen
+    // Wenn alle Anfragen erfolgreich waren und die Option zum Leeren des Textfelds aktiviert ist
     const allSuccessful = results.every(result => result.success);
+    if (allSuccessful && customText && result.clearTextAfterSend) {
+      // Gespeicherten Text löschen
+      await storage.remove('lastCustomText');
+    }
+    
+    // Gesamtergebnis bestimmen
     const allFailed = results.every(result => !result.success);
     
     if (allSuccessful) {
@@ -119,7 +126,8 @@ async function sendUrlToWebhook(url, customText, tabId, specificWebhookIndex = n
         results: results,
         message: targetWebhooks.length > 1 
           ? `URL an ${results.length} Webhooks gesendet` 
-          : 'URL erfolgreich gesendet'
+          : 'URL erfolgreich gesendet',
+        textCleared: allSuccessful && customText && result.clearTextAfterSend
       };
     } else if (allFailed) {
       return { 
@@ -135,7 +143,8 @@ async function sendUrlToWebhook(url, customText, tabId, specificWebhookIndex = n
         success: true, 
         partial: true,
         results: results,
-        message: `URL an ${results.filter(r => r.success).length} von ${results.length} Webhooks gesendet`
+        message: `URL an ${results.filter(r => r.success).length} von ${results.length} Webhooks gesendet`,
+        textCleared: allSuccessful && customText && result.clearTextAfterSend
       };
     }
   } catch (error) {

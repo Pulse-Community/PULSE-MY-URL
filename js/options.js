@@ -33,15 +33,18 @@ async function loadSettings() {
   // Lade-Animation anzeigen
   const includePageContentCheckbox = document.getElementById('includePageContent');
   const sendToAllWebhooksCheckbox = document.getElementById('sendToAllWebhooks');
+  const clearTextAfterSendCheckbox = document.getElementById('clearTextAfterSend');
   includePageContentCheckbox.disabled = true;
   sendToAllWebhooksCheckbox.disabled = true;
+  clearTextAfterSendCheckbox.disabled = true;
   
   const storage = chrome.storage || browser.storage;
-  const result = await storage.sync.get(['webhooks', 'lastCustomText', 'includePageContent', 'sendToAllWebhooks', 'activeWebhookIndex']);
+  const result = await storage.sync.get(['webhooks', 'lastCustomText', 'includePageContent', 'sendToAllWebhooks', 'clearTextAfterSend', 'activeWebhookIndex']);
   
   // Lade-Animation entfernen
   includePageContentCheckbox.disabled = false;
   sendToAllWebhooksCheckbox.disabled = false;
+  clearTextAfterSendCheckbox.disabled = false;
   
   // Webhooks laden
   const webhooks = result.webhooks || [];
@@ -76,6 +79,13 @@ async function loadSettings() {
   } else {
     // Standardmäßig aktiviert
     sendToAllWebhooksCheckbox.checked = true;
+  }
+  
+  if (result.clearTextAfterSend !== undefined) {
+    clearTextAfterSendCheckbox.checked = result.clearTextAfterSend;
+  } else {
+    // Standardmäßig aktiviert
+    clearTextAfterSendCheckbox.checked = true;
   }
   
   if (result.lastCustomText) {
@@ -226,6 +236,7 @@ async function saveSettings() {
   const webhooks = getWebhooksFromUI();
   const includePageContent = document.getElementById('includePageContent').checked;
   const sendToAllWebhooks = document.getElementById('sendToAllWebhooks').checked;
+  const clearTextAfterSend = document.getElementById('clearTextAfterSend').checked;
   
   if (webhooks.length === 0) {
     showStatus('Bitte geben Sie mindestens eine gültige Webhook-URL ein.', false);
@@ -252,6 +263,7 @@ async function saveSettings() {
       webhooks: webhooks,
       includePageContent: includePageContent,
       sendToAllWebhooks: sendToAllWebhooks,
+      clearTextAfterSend: clearTextAfterSend,
       activeWebhookIndex: activeWebhookIndex,
       // Für Abwärtskompatibilität die erste URL auch als webhookUrl speichern
       webhookUrl: webhooks.length > 0 ? webhooks[0].url : ''
@@ -409,6 +421,7 @@ async function testWebhook() {
   const testSelect = document.getElementById('testWebhookSelect');
   const selectedIndex = testSelect.value;
   const testStatus = document.getElementById('testStatus');
+  const testText = document.getElementById('testText');
   
   // Button-Status aktualisieren
   const testButton = document.getElementById('testButton');
@@ -444,7 +457,16 @@ async function testWebhook() {
     return;
   }
   
-  await testSingleWebhook(webhook.url);
+  const success = await testSingleWebhook(webhook.url);
+  
+  // Wenn der Test erfolgreich war und die Option zum Leeren des Textfelds aktiviert ist
+  if (success && document.getElementById('clearTextAfterSend').checked) {
+    testText.value = '';
+    
+    // Auch den gespeicherten Text löschen
+    const storage = chrome.storage || browser.storage;
+    await storage.sync.remove('lastCustomText');
+  }
   
   // Button zurücksetzen
   testButton.disabled = false;
