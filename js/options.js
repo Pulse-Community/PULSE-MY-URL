@@ -149,14 +149,14 @@ function addWebhookEntry(url = '', name = '', index = -1) {
       runtime.sendMessage({ action: 'settingsUpdated' });
       
       // Visuelles Feedback im Eintrag
-      entry.classList.add('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+      entry.classList.add('border-blue-300', 'dark:border-blue-700', 'bg-blue-50', 'dark:bg-blue-900/20');
       setTimeout(() => {
-        entry.classList.remove('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+        entry.classList.remove('border-blue-300', 'dark:border-blue-700', 'bg-blue-50', 'dark:bg-blue-900/20');
       }, 2000);
       
       // Erfolgsmeldung anzeigen
       statusElement.textContent = 'Webhook erfolgreich gespeichert!';
-      statusElement.className = 'webhook-status mt-2 text-sm text-green-600 dark:text-green-400';
+      statusElement.className = 'webhook-status mt-2 text-sm text-blue-600 dark:text-blue-400';
       
       // Test-Webhook-Dropdown aktualisieren
       updateTestWebhookDropdown(webhooks);
@@ -441,19 +441,19 @@ Ein Beispielabsatz mit **fett** und *kursiv* formatiertem Text.
     if (response.ok) {
       if (entryElement) {
         // Visuelles Feedback im Eintrag
-        entryElement.classList.add('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+        entryElement.classList.add('border-blue-300', 'dark:border-blue-700', 'bg-blue-50', 'dark:bg-blue-900/20');
         setTimeout(() => {
-          entryElement.classList.remove('border-green-300', 'dark:border-green-700', 'bg-green-50', 'dark:bg-green-900/20');
+          entryElement.classList.remove('border-blue-300', 'dark:border-blue-700', 'bg-blue-50', 'dark:bg-blue-900/20');
         }, 2000);
         
         if (statusElement) {
           statusElement.textContent = "Webhook erfolgreich getestet!";
-          statusElement.className = "webhook-status mt-2 text-sm text-green-600 dark:text-green-400";
+          statusElement.className = "webhook-status mt-2 text-sm text-blue-600 dark:text-blue-400";
         }
       } else {
         // Feedback im Teststatus
         const testStatus = document.getElementById('testStatus');
-        testStatus.innerHTML = `<span class="text-green-600 dark:text-green-400">✓ Test erfolgreich!</span>`;
+        testStatus.innerHTML = `<span class="text-blue-600 dark:text-blue-400">✓ Test erfolgreich!</span>`;
       }
       
       // Speichere den benutzerdefinierten Text für zukünftige Verwendung
